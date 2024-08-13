@@ -288,6 +288,41 @@ export const getBestSellerProducts = async (req, res, next) => {
   }
 };
 
+export const getFeaturedProducts = async (req, res, next) => {
+  const { merchantCode } = req.params;
+  try {
+    if (!merchantCode) {
+      return next(createHttpError(400, "Merchant code is missing"));
+    }
+    const merchant = await Merchant.findOne({ merchantCode: merchantCode });
+    if (!merchant) {
+      return next(createHttpError(404, "Merchant not found"));
+    }
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skipCount = (page - 1) * limit;
+    const count = await Product.countDocuments({ merchantCode });
+    const totalPages = Math.ceil(count / limit);
+    const products = await Product.find({
+      merchantCode: merchantCode,
+      condition: "featured",
+      isActive: true,
+    })
+      .sort({ _id: -1 })
+      .skip(skipCount)
+      .limit(limit);
+    const product = {
+      currentPage: page,
+      totalPages,
+      count,
+      products,
+    };
+    res.status(200).json(product);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getProductsByCategory = async (req, res, next) => {
   const { merchantCode, category } = req.params;
   try {

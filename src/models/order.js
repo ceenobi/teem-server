@@ -39,7 +39,7 @@ const orderSchema = new Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ["Pay on delivery", "Paystack"],
+      enum: ["Pay on delivery", "Paystack", "Paypal"],
       default: "Pay on delivery",
       required: true,
     },

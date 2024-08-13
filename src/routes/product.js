@@ -11,6 +11,7 @@ router.post(
 );
 router.get("/:merchantCode/all", ProductController.getAllProducts);
 router.get("/:merchantCode/get/new", ProductController.getNewProducts);
+router.get("/:merchantCode/get/featured", ProductController.getFeaturedProducts);
 router.get(
   "/:merchantCode/get/best-seller",
   ProductController.getBestSellerProducts

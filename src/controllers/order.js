@@ -98,9 +98,7 @@ const addCustomer = async (user, merchant, next) => {
         merchantCode: merchant.merchantCode,
         username: user.username,
         email: user.email,
-        photo:
-          user.photo ||
-          "https://res.cloudinary.com/ceenobi/image/upload/v1698666381/icons/user-avatar-profile-icon-black-vector-illustration_mpn3ef.jpg",
+        photo: user.photo ||  "https://res.cloudinary.com/ceenobi/image/upload/v1698666381/icons/user-avatar-profile-icon-black-vector-illustration_mpn3ef.jpg",
         totalOrders: getOrderLength,
         totalSpent: totalSum,
       });
@@ -332,9 +330,9 @@ export const updateAnOrderStatus = async (req, res, next) => {
     }
     const updatedFields = {
       orderStatus,
-      isPaid: isPaid ? isPaid : false,
+      isPaid,
       paidAt: isPaid ? Date.now() : undefined,
-      isDelivered: isDelivered ? isDelivered : false,
+      isDelivered,
       deliveredAt: isDelivered ? Date.now() : undefined,
       reference,
     };
