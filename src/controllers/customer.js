@@ -74,9 +74,9 @@ export const deleteACustomer = async (req, res, next) => {
     if (!customer) {
       return next(createHttpError(404, "Customer not found"));
     }
-    await Order.deleteOne({ userId: customer.userId });
+    // await Order.deleteOne({ userId: customer.userId });
     await customer.deleteOne();
-    res.status(200).json({ msg: "Customer deleted!" });
+    res.status(200).json({ msg: "Customer deleted" });
   } catch (error) {
     next(error);
   }

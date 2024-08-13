@@ -98,7 +98,9 @@ const addCustomer = async (user, merchant, next) => {
         merchantCode: merchant.merchantCode,
         username: user.username,
         email: user.email,
-        photo: user.photo,
+        photo:
+          user.photo ||
+          "https://res.cloudinary.com/ceenobi/image/upload/v1698666381/icons/user-avatar-profile-icon-black-vector-illustration_mpn3ef.jpg",
         totalOrders: getOrderLength,
         totalSpent: totalSum,
       });
@@ -127,14 +129,14 @@ const addCustomer = async (user, merchant, next) => {
 const sendOrderMail = async (user, order) => {
   const emailStatus = await sendEmail({
     username: user.username,
-    from: env.USER_MAIL_LOGIN,
+    from: env.BREVO_MAIL_LOGIN,
     to: user.email,
     subject: "You created an order",
     text: `Your order ${order._id} was successfully
         created. You are to pay #${order.total}`,
   });
   if (!emailStatus.success) {
-    return next(createHttpError(500, "Order message not sent"));
+    return { error: "Order message not sent" };
   }
 };
 
@@ -330,9 +332,9 @@ export const updateAnOrderStatus = async (req, res, next) => {
     }
     const updatedFields = {
       orderStatus,
-      isPaid,
+      isPaid: isPaid ? isPaid : false,
       paidAt: isPaid ? Date.now() : undefined,
-      isDelivered,
+      isDelivered: isDelivered ? isDelivered : false,
       deliveredAt: isDelivered ? Date.now() : undefined,
       reference,
     };
@@ -345,7 +347,7 @@ export const updateAnOrderStatus = async (req, res, next) => {
     if (isPaid) {
       await sendEmail({
         username: user.username,
-        from: env.USER_MAIL_LOGIN,
+        from: env.BREVO_MAIL_LOGIN,
         to: user.email,
         subject: "Payment received",
         text: `We received your payment with reference id: ${
@@ -356,7 +358,7 @@ export const updateAnOrderStatus = async (req, res, next) => {
     if (isDelivered) {
       await sendEmail({
         username: user.username,
-        from: env.USER_MAIL_LOGIN,
+        from: env.BREVO_MAIL_LOGIN,
         to: user.email,
         subject: "Order fufillment",
         text: `We have successfully delivered your order with reference id: ${
