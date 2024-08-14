@@ -26,8 +26,8 @@ cloudinary.config({
 });
 const corsOptions = {
   origin: [
-    "https://teemclient.vercel.app/",
-    "https://teem-seller.vercel.app/",
+    "https://teemclient.vercel.app",
+    "https://teem-seller.vercel.app",
     "http://localhost:5173",
     "http://localhost:5174",
   ], // Allows requests from specified domains. Specify actual domain in production for security.
