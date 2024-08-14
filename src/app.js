@@ -26,7 +26,7 @@ cloudinary.config({
 });
 const corsOptions = {
   origin: [
-    "https://teemclient.vercel.app",
+    "https://baggitstore.vercel.app",
     "https://teem-seller.vercel.app",
     "http://localhost:5173",
     "http://localhost:5174",
