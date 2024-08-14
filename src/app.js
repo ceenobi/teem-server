@@ -30,15 +30,16 @@ const corsOptions = {
     "https://teem-seller.vercel.app",
     "http://localhost:5173",
     "http://localhost:5174",
-  ], // Allows requests from specified domains. Specify actual domain in production for security.
-  optionsSuccessStatus: 200, // Ensure compatibility by setting OPTIONS success status to 200 OK.
-  methods: ["GET", "POST", "PATCH", "DELETE"], // Allowed method
+  ],
+  optionsSuccessStatus: 200,
+  methods: ["GET", "POST", "PATCH", "DELETE"],
+  credentials: true,
 };
-app.use(cors(corsOptions)); //allow cross origin request connecting two different apps
-app.use(morgan("dev")); //log http requests in dev mode
-app.use(json({ limit: "25mb" })); //parse request as json object
+app.use(cors(corsOptions));
+app.use(morgan("dev"));
+app.use(json({ limit: "25mb" }));
 
-app.disable("x-powered-by"); //disable header information sent to frontend
+app.disable("x-powered-by");
 
 app.get("/", (req, res) => {
   res.send("Hello express");
@@ -55,12 +56,12 @@ app.use("/api/v1/discount", discountRoutes);
 app.use("/api/v1/order", orderRoutes);
 app.use("/api/v1/customer", customerRoutes);
 
-//error handling for wrong endpoints
+
 app.use((req, res, next) => {
   return next(createHttpError(404, "Endpoint not found"));
 });
 
-//handle api errors
+
 app.use((error, req, res, next) => {
   console.error(error);
   let errorMessage = "An unknown error has occurred";

@@ -4,7 +4,6 @@ import env from "./utils/validateEnv.js";
 
 const port = env.PORT || 5005;
 
-//check if port exist
 if (!port || !env.MONGO_URI) {
   throw new Error(
     "Please ensure that you have a port and your MONGO connection in place"

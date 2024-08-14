@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 import env from "../utils/validateEnv.js";
 
-//check connection to db
 const connection = {};
 
 export const connectToDb = async () => {
@@ -11,14 +10,14 @@ export const connectToDb = async () => {
   }
   let db;
   try {
-    connection.isConnected = true; // update status before connection
+    connection.isConnected = true;
     db = await mongoose.connect(env.MONGO_URI, {
-      dbName: "Footsy", //give db name
+      dbName: "Footsy",
     });
     console.log("MongoDb connected successfully");
   } catch (error) {
     console.log(error);
   } finally {
-    connection.isConnected = db.connections[0].readyState; //update connection status
+    connection.isConnected = db.connections[0].readyState;
   }
 };
