@@ -25,8 +25,9 @@ cloudinary.config({
   secure: true,
 });
 const corsOptions = {
-  origin: "*", // Allows requests from all domains. Specify actual domain in production for security.
+  origin: ["http://localhost:5174", "http://localhost:5173"], // Allows requests from specified domains. Specify actual domain in production for security.
   optionsSuccessStatus: 200, // Ensure compatibility by setting OPTIONS success status to 200 OK.
+  methods: ["GET", "POST", "PATCH", "DELETE"], // Allowed method
 };
 app.use(cors(corsOptions)); //allow cross origin request connecting two different apps
 app.use(morgan("dev")); //log http requests in dev mode
