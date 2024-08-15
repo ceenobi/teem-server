@@ -80,7 +80,6 @@ export const signUp = async (req, res, next) => {
 
 export const loginViaEmail = async (req, res, next) => {
   const { email } = req.body;
-  const requestOrigin = req.get("Origin");
   try {
     if (!email) {
       return next(createHttpError(400, "Email field is missing"));
@@ -190,7 +189,7 @@ export const authenticateUser = async (req, res, next) => {
 export const getUserRefreshToken = async (req, res, next) => {
   const { id: userId } = req.params;
   try {
-    const user = await User.findById(userId).select("+refreshToken");
+    const user = await User.findById(userId.toString()).select("+refreshToken");
     if (!user) {
       return next(createHttpError(404, "User not found"));
     }
