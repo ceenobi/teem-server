@@ -16,7 +16,6 @@ export const createProduct = async (req, res, next) => {
     image,
     brand,
     isActive,
-    inStock,
   } = req.body;
   try {
     if (!merchantCode) {
@@ -52,7 +51,6 @@ export const createProduct = async (req, res, next) => {
       brand,
       image: productImage,
       isActive,
-      inStock,
     });
     await product.save();
     res.status(201).json({ product, msg: "Product added." });

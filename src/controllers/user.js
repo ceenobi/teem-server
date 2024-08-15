@@ -1,6 +1,7 @@
 import createHttpError from "http-errors";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import NodeCache from "node-cache";
 import { isValidObjectId } from "mongoose";
 import crypto from "crypto";
 import User from "../models/user.js";
@@ -16,7 +17,8 @@ import { uploadSingleImage } from "../config/cloudinaryUpload.js";
 import generateRandomNumber from "../utils/generateMerchantCode.js";
 import Merchant from "../models/merchant.js";
 
-//create randomToken
+const cache = new NodeCache({ stdTTL: 300 });
+
 const createRandomToken = async (userId, token) => {
   const createToken = new Token(userId, token);
   return createToken.save();
@@ -24,52 +26,42 @@ const createRandomToken = async (userId, token) => {
 
 export const signUp = async (req, res, next) => {
   const { email, username, password } = req.body;
-  const requestOrigin = req.get("Origin"); // Get the request origin
+  // const requestOrigin = req.get("Origin");
   try {
     if (!email || !username || !password) {
       return next(createHttpError(400, "Form fields are missing"));
     }
-    //check if username already exists
     const existingUsername = await User.findOne({ username: username });
     if (existingUsername) {
       return next(
         createHttpError(409, "Username already exists!, choose another")
       );
     }
-    //check existing email
     const existingEmail = await User.findOne({ email: email });
     if (existingEmail) {
       return next(
         createHttpError(409, "Email already exists!, choose another")
       );
     }
-    //encrypt password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-    //create user
     const user = await User.create({
       email,
       username,
       password: hashedPassword,
     });
-    //sign user using jwt
     const accessToken = generateToken(user.id, user.role);
     const refreshToken = generateRefreshToken(user.id, user.role);
-    //save refreshtoken to user details in database
     user.refreshToken = refreshToken;
-    //save user doc
     await user.save();
-    //send user welcome mail
-    const sendUserMail = await sendEmail({
+    await sendEmail({
       username: username,
       from: env.BREVO_MAIL_LOGIN,
       to: user.email,
       subject: "New user registration",
       text: "Welcome to Footsy! We're very excited to have you on board.",
     });
-    //send response to frontend
     return res.status(201).json({
-      sendUserMail,
       accessToken,
       msg: "Registration successfull",
     });
@@ -93,7 +85,7 @@ export const loginViaEmail = async (req, res, next) => {
       code: generateRandomNumber(),
     });
     await createLoginToken.save();
-    const loginLink = `${env.BASE_URL_SELLER}/authorize/${user._id}/${createLoginToken.code}`;
+    const loginLink = `${env.BASE_URL_SELLER}/authorize/${user.id}/${createLoginToken.code}`;
     const sendLoginMail = await sendEmail({
       username: user.username,
       from: env.BREVO_MAIL_LOGIN,
@@ -177,9 +169,14 @@ export const authenticateUser = async (req, res, next) => {
   const { id: userId } = req.user;
   try {
     const user = await User.findById(userId);
+    const cacheUser = cache.get("user");
+    if (cacheUser) {
+      return res.status(200).json(cacheUser);
+    }
     if (!user) {
       return next(createHttpError(404, "User not found"));
     }
+    cache.set("user", user);
     res.status(200).json(user);
   } catch (error) {
     next(error);
@@ -187,9 +184,9 @@ export const authenticateUser = async (req, res, next) => {
 };
 
 export const getUserRefreshToken = async (req, res, next) => {
-  const { id: userId } = req.params;
+  const { id: username } = req.params;
   try {
-    const user = await User.findById(userId.toString()).select("+refreshToken");
+    const user = await User.findOne({ username }).select("+refreshToken");
     if (!user) {
       return next(createHttpError(404, "User not found"));
     }
@@ -329,7 +326,6 @@ export const updateUserAccount = async (req, res, next) => {
     }
     let profilePhoto;
     let updatedPassword;
-    //upload photo to cloudinary
     if (photo) {
       try {
         const photoUploaded = await uploadSingleImage(photo);
@@ -339,7 +335,6 @@ export const updateUserAccount = async (req, res, next) => {
         return next(createHttpError(500, "failed to upload image"));
       }
     }
-    //handle password
     if (password && !currentPassword) {
       return next(createHttpError(401, "Please provide your current password"));
     }
@@ -367,7 +362,6 @@ export const updateUserAccount = async (req, res, next) => {
       (key) =>
         updatedFields[key] === "" || (undefined && delete updatedFields[key])
     );
-    //update user to db
     const updatedUser = await User.findByIdAndUpdate(userId, updatedFields, {
       new: true,
     });
