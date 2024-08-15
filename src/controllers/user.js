@@ -94,7 +94,7 @@ export const loginViaEmail = async (req, res, next) => {
       code: generateRandomNumber(),
     });
     await createLoginToken.save();
-    const loginLink = `${env.BASE_URL_SELLER}/authorize/${user.id}/${createLoginToken.code}`;
+    const loginLink = `${env.BASE_URL_SELLER}/authorize/${user._id}/${createLoginToken.code}`;
     const sendLoginMail = await sendEmail({
       username: user.username,
       from: env.BREVO_MAIL_LOGIN,
