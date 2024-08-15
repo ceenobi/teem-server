@@ -4,7 +4,7 @@ import Merchant from "../models/merchant.js";
 import { uploadSingleImage } from "../config/cloudinaryUpload.js";
 import NodeCache from "node-cache";
 
-const cache = new NodeCache({ stdTTL: 300 });
+const cache = new NodeCache({ stdTTL: 30 });
 
 export const createCategory = async (req, res, next) => {
   const { merchantCode } = req.params;

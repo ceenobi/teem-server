@@ -17,7 +17,7 @@ import { uploadSingleImage } from "../config/cloudinaryUpload.js";
 import generateRandomNumber from "../utils/generateMerchantCode.js";
 import Merchant from "../models/merchant.js";
 
-const cache = new NodeCache({ stdTTL: 300 });
+const cache = new NodeCache({ stdTTL: 30 });
 
 const createRandomToken = async (userId, token) => {
   const createToken = new Token(userId, token);
