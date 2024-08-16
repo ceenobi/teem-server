@@ -6,8 +6,8 @@ const sendEmail = async ({ from, to, subject, text, username, link, btnText, ins
   let mailGenerator = new Mailgen({
     theme: "default",
     product: {
-      name: "FOOTSY",
-      link: "https://mailgen.js",
+      name: "TEEM",
+      link: "https://teem-seller.vercel.app",
     },
   });
 

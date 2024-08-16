@@ -59,7 +59,7 @@ export const signUp = async (req, res, next) => {
       from: env.BREVO_MAIL_LOGIN,
       to: user.email,
       subject: "New user registration",
-      text: "Welcome to Footsy! We're very excited to have you on board.",
+      text: "Welcome to TEEM! We're very excited to have you on board.",
     });
     return res.status(201).json({
       accessToken,
