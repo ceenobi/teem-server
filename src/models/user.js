@@ -38,11 +38,6 @@ const userSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "Merchant",
     },
-    refreshToken: {
-      type: String,
-      select: false,
-      expires: 60 * 60 * 24,
-    },
   },
   {
     timestamps: true,

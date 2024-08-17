@@ -6,6 +6,7 @@ import { isValidObjectId } from "mongoose";
 import crypto from "crypto";
 import User from "../models/user.js";
 import Token from "../models/token.js";
+import RefreshToken from "../models/refreshToken.js";
 import LoginCode from "../models/loginCode.js";
 import {
   generateToken,
@@ -51,8 +52,11 @@ export const signUp = async (req, res, next) => {
       password: hashedPassword,
     });
     const accessToken = generateToken(user.id, user.role);
-    const refreshToken = generateRefreshToken(user.id, user.role);
-    user.refreshToken = refreshToken;
+    let setRefreshToken = await RefreshToken.create({
+      userId: user.id,
+      refreshToken: generateRefreshToken(user.id, user.role),
+    });
+    await setRefreshToken.save();
     await user.save();
     await sendEmail({
       username: username,
@@ -128,8 +132,11 @@ export const verifyLoginLink = async (req, res, next) => {
     }
     const user = await User.findById(userId);
     const accessToken = generateToken(user.id, user.role);
-    const refreshToken = generateRefreshToken(user.id, user.role);
-    user.refreshToken = refreshToken;
+    let setRefreshToken = await RefreshToken.create({
+      userId: user.id,
+      refreshToken: generateRefreshToken(user.id, user.role),
+    });
+    await setRefreshToken.save();
     await user.save();
     return res
       .status(200)
@@ -154,8 +161,11 @@ export const login = async (req, res, next) => {
       return next(createHttpError(401, "username or password is incorrect"));
     }
     const accessToken = generateToken(user.id, user.role);
-    const refreshToken = generateRefreshToken(user.id, user.role);
-    user.refreshToken = refreshToken;
+    let setRefreshToken = await RefreshToken.create({
+      userId: user.id,
+      refreshToken: generateRefreshToken(user.id, user.role),
+    });
+    await setRefreshToken.save();
     await user.save();
     return res
       .status(200)
@@ -186,11 +196,15 @@ export const authenticateUser = async (req, res, next) => {
 export const getUserRefreshToken = async (req, res, next) => {
   const { id: username } = req.params;
   try {
-    const user = await User.findOne({ username }).select("+refreshToken");
+    const user = await User.findOne({ username });
     if (!user) {
       return next(createHttpError(404, "User not found"));
     }
-    res.status(200).json({ refreshToken: user.refreshToken });
+    const findRefreshToken = await RefreshToken.findOne({ userId: user.id });
+    if (!findRefreshToken) {
+      return next(createHttpError(404, "Refresh token not found"));
+    }
+    res.status(200).json({ refreshToken: findRefreshToken.refreshToken });
   } catch (error) {
     next(error);
   }
@@ -202,13 +216,26 @@ export const refereshAccessToken = async (req, res, next) => {
     return next(createHttpError(401, "You are unauthenticated!"));
   }
   try {
-    jwt.verify(refreshToken, env.JWT_REFRESH_TOKEN, (err, user) => {
+    jwt.verify(refreshToken, env.JWT_REFRESH_TOKEN, async (err, user) => {
       if (err) {
         console.log(err);
         return next(createHttpError(401, "Invalid refresh token"));
       }
       const newAccessToken = generateToken(user.id, user.role);
       const newRefreshToken = generateRefreshToken(user.id, user.role);
+      const refreshUserAccessToken = await RefreshToken.findOne({
+        userId: user.id,
+      });
+      if (refreshUserAccessToken) {
+        refreshUserAccessToken.refreshToken = newRefreshToken;
+        await refreshUserAccessToken.save();
+      } else {
+        let setRefreshToken = await RefreshToken.create({
+          userId: user.id,
+          refreshToken: newRefreshToken,
+        });
+        await setRefreshToken.save();
+      }
       res
         .status(200)
         .json({ accessToken: newAccessToken, refreshToken: newRefreshToken });
