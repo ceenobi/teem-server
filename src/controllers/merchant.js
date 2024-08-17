@@ -176,6 +176,7 @@ export const deleteMerchantAccount = async (req, res, next) => {
     const user = await User.findById(userId);
     await Merchant.deleteOne({ userId: userId });
     user.merchantId = undefined;
+    user.role = "user";
     await user.save();
     res.status(200).json({ msg: "Merchant account deleted" });
   } catch (error) {
