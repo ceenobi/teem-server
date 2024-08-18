@@ -4,7 +4,7 @@ import Merchant from "../models/merchant.js";
 import { uploadSingleImage } from "../config/cloudinaryUpload.js";
 import NodeCache from "node-cache";
 
-const cache = new NodeCache({ stdTTL: 30 });
+const cache = new NodeCache({ stdTTL: 120 });
 
 export const createCategory = async (req, res, next) => {
   const { merchantCode } = req.params;
@@ -50,13 +50,13 @@ export const getAllCategory = async (req, res, next) => {
     if (!merchantCode) {
       return next(createHttpError(400, "MerchantId is missing"));
     }
-    const merchant = await Merchant.findOne({ merchantCode: merchantCode });
-    if (!merchant) {
-      return next(createHttpError(404, "Merchant not found"));
-    }
     const cacheCategory = cache.get("categories");
     if (cacheCategory) {
       return res.status(200).json(cacheCategory);
+    }
+    const merchant = await Merchant.findOne({ merchantCode: merchantCode });
+    if (!merchant) {
+      return next(createHttpError(404, "Merchant not found"));
     }
     const categories = await Category.find({ merchantCode: merchantCode });
     if (!categories) {
@@ -77,13 +77,13 @@ export const getACategory = async (req, res, next) => {
         createHttpError(400, "Merchant code or categoryId is missing")
       );
     }
-    const merchant = await Merchant.findOne({ merchantCode: merchantCode });
-    if (!merchant) {
-      return next(createHttpError(404, "Merchant not found"));
-    }
     const cacheCategory = cache.get("category");
     if (cacheCategory) {
       return res.status(200).json(cacheCategory);
+    }
+    const merchant = await Merchant.findOne({ merchantCode: merchantCode });
+    if (!merchant) {
+      return next(createHttpError(404, "Merchant not found"));
     }
     const category = await Category.findById(categoryId);
     cache.set("category", category);

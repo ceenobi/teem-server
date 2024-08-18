@@ -73,11 +73,11 @@ export const getMerchant = async (req, res, next) => {
   const { id: userId } = req.user;
   const cache = new NodeCache({ stdTTL: 180 });
   try {
-    const merchant = await Merchant.findOne({ userId });
     const cacheMerchant = cache.get("merchant");
     if (cacheMerchant) {
       return res.status(200).json(cacheMerchant);
     }
+    const merchant = await Merchant.findOne({ userId });
     if (!merchant) {
       return next(createHttpError(404, "Merchant account not found"));
     }
