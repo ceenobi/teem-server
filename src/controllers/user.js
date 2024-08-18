@@ -18,8 +18,6 @@ import { uploadSingleImage } from "../config/cloudinaryUpload.js";
 import generateRandomNumber from "../utils/generateMerchantCode.js";
 import Merchant from "../models/merchant.js";
 
-const cache = new NodeCache({ stdTTL: 30 });
-
 const createRandomToken = async (userId, token) => {
   const createToken = new Token(userId, token);
   return createToken.save();
@@ -27,7 +25,6 @@ const createRandomToken = async (userId, token) => {
 
 export const signUp = async (req, res, next) => {
   const { email, username, password } = req.body;
-  // const requestOrigin = req.get("Origin");
   try {
     if (!email || !username || !password) {
       return next(createHttpError(400, "Form fields are missing"));
@@ -177,6 +174,7 @@ export const login = async (req, res, next) => {
 
 export const authenticateUser = async (req, res, next) => {
   const { id: userId } = req.user;
+  const cache = new NodeCache({ stdTTL: 180 });
   try {
     const user = await User.findById(userId);
     const cacheUser = cache.get("user");

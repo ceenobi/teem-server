@@ -1,4 +1,5 @@
 import createHttpError from "http-errors";
+import NodeCache from "node-cache";
 import Merchant from "../models/merchant.js";
 import User from "../models/user.js";
 import { uploadSingleImage } from "../config/cloudinaryUpload.js";
@@ -70,11 +71,17 @@ export const createMerchant = async (req, res, next) => {
 
 export const getMerchant = async (req, res, next) => {
   const { id: userId } = req.user;
+  const cache = new NodeCache({ stdTTL: 180 });
   try {
     const merchant = await Merchant.findOne({ userId });
+    const cacheMerchant = cache.get("merchant");
+    if (cacheMerchant) {
+      return res.status(200).json(cacheMerchant);
+    }
     if (!merchant) {
       return next(createHttpError(404, "Merchant account not found"));
     }
+    cache.set("merchant", merchant);
     res.status(200).json(merchant);
   } catch (error) {
     next(error);
@@ -234,5 +241,3 @@ export const seeOrderRecords = async (req, res, next) => {
     next(error);
   }
 };
-
-
